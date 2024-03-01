@@ -13,11 +13,13 @@ export default class Preload extends Phaser.Scene {
 
   create() {
     this.add.text(100, 100, 'Press any key to start', { fontSize: '24px', fill: '#fff' });
+    // Quando pressiona qlq tecla starta o game
     this.input.keyboard.once('keydown', this.startGame, this);
   }
 
   startGame() {
     console.log('Start Game');
+    // Transiciona para level1
     this.scene.start("level1")
   }
 }

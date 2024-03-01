@@ -4,8 +4,11 @@ export default class Level1 extends Phaser.Scene {
   }
 
   create () {
+    // Adiociona imagem do background
+    this.add.image(0, -200, "bg").setScale(1.12).setOrigin(0, 0);
+
     // cria um grupo de objetos com fisica
-    const floorGroup = this.physics.add.staticGroup();
+    this.floorGroup = this.physics.add.staticGroup();
 
     // Cria grupo das plataformas que se movem
     this.platformGroup = this.physics.add.group({
@@ -24,8 +27,15 @@ export default class Level1 extends Phaser.Scene {
       loop: true,
     });
 
-    // Adiociona imagem do background
-    this.add.image(0, -200, "bg").setScale(1.12).setOrigin(0, 0);
+    // Adiciona o timer do jogo
+    this.timerText = this.add.text(100, 100, 'Timer: 0s', {
+      fontSize: '32px',
+      fill: '#000',
+    });
+
+    // Inicializa variavel do timer
+    this.timer = 1;
+
     // Cria o player
     this.player = this.physics.add.sprite(100, 400, 'player_idle').setScale(3)
 
@@ -33,7 +43,7 @@ export default class Level1 extends Phaser.Scene {
     for(var i = 0; i < 30; i++)
     {
       // cria o floor e adiciona ao grupo
-      floorGroup.create(50 * i, 700, "floor");
+      this.floorGroup.create(50 * i, 700, "floor");
     }
 
     // Cria animacoes
@@ -58,16 +68,21 @@ export default class Level1 extends Phaser.Scene {
       repeat: -1
     });
 
-    // Adiciona colisao do player ao floorGroup
-    this.physics.add.collider(this.player, floorGroup);
     // Chama funcao stickyPlatform quando colidir com o grupo das plataformas q se movimentam
     this.physics.add.collider(this.player, this.platformGroup, this.stickyPlatform, null, this);
+
+    // Quando player colide com o chao, reseta o timer chamando a funcao resetTimer
+    this.physics.add.collider(this.player, this.floorGroup, this.resetTimer, null, this);
 
     // inicia cursores
     this.cursors = this.input.keyboard.createCursorKeys();
   }
 
   update () {
+    // Soma o delta tempo no timer e mostra na tela
+    this.timer += this.sys.game.loop.delta;
+    this.timerText.setText(`Timer: ${Math.floor(this.timer / 1000)}s`);
+
     // Velocidade da plataforma
     this.platformGroup.setVelocityX(this.platformSpeed);
     // Randomiza o Y spawn da plataforma
@@ -100,6 +115,7 @@ export default class Level1 extends Phaser.Scene {
       this.player.setVelocityY(-800);
     }
   }
+
   spawnPlatform() {
     // Spawna plataforma na localizacao spawnXY
     const platform = this.platformGroup.create(this.spawnX, this.spawnY, "floor");
@@ -107,5 +123,9 @@ export default class Level1 extends Phaser.Scene {
   // Seta a velocidade do player a mesma da plataforma para causar efeito de "grudento"
   stickyPlatform () {
     this.player.setVelocityX(this.platformSpeed * 1)
+  }
+
+  resetTimer() {
+    this.timer = 0;
   }
 }
